@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: email-service
+    namespace: rideshare-app
+    labels:
+      app: email-service
+spec:
+    selector:
+      app: email-service
+    ports:
+      - port: 3002
+        targetPort: 3002
+        protocol: TCP

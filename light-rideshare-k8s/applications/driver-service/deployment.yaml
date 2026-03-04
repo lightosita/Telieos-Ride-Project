@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: driver-service
+    namespace: rideshare-app
+    labels:
+      app: driver-service
+spec:
+    replicas: 2
+    selector:
+      matchLabels:
+        app: driver-service
+    template:
+      metadata:
+        labels:
+          app: driver-service
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                          - driver-service
+                  topologyKey: topology.kubernetes.io/zone
+        containers:
+          - name: driver-service
+            image: 221693237976.dkr.ecr.us-east-1.amazonaws.com/rideshare-driver-service:1.0
+            ports:
+              - containerPort: 3003
+            envFrom:
+              - configMapRef:
+                  name: driver-service-config
+              - secretRef:
+                  name: driver-service-secrets
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
+            readinessProbe:
+              httpGet:
+                path: /api/v1/health
+                port: 3003
+              initialDelaySeconds: 10
+              periodSeconds: 5
+            livenessProbe:
+              httpGet:
+                path: /api/v1/health
+                port: 3003
+              initialDelaySeconds: 30
+              periodSeconds: 10

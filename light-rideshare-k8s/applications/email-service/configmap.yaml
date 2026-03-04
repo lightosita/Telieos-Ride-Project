@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: email-service-config
+    namespace: rideshare-app
+data:
+    PORT: "3002"
+    SENDER_EMAIL: "DoNotReply@9929ee47-d7de-4494-8bec-adfce9d03cde.azurecomm.net"

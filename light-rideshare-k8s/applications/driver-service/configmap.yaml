@@ -1,0 +1,15 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: driver-service-config
+    namespace: rideshare-app
+data:
+    NODE_ENV: production
+    PORT: "3003"
+    JWT_EXPIRES_IN: "2d"
+    REDIS_TLS: "true"
+    FRONTEND_URL: "https://light.rideshare.teleioslabs.net"
+    EMAIL_SERVICE_URL: "http://email-service.rideshare-app.svc.cluster.local:3002"
+    RIDER_SERVICE_URL: "http://rider-service.rideshare-app.svc.cluster.local:3001"
+    TRIP_SERVICE_URL: "http://trip-service.rideshare-app.svc.cluster.local:3005/api/v1/trips"

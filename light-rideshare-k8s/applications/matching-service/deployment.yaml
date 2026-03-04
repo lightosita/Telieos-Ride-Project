@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matching-service
+  namespace: rideshare-app
+  labels:
+    app: matching-service
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: matching-service
+
+  template:
+    metadata:
+      labels:
+        app: matching-service
+
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - matching-service
+                topologyKey: topology.kubernetes.io/zone
+
+      containers:
+        - name: matching-service
+          image: 221693237976.dkr.ecr.us-east-1.amazonaws.com/rideshare-matching-service:1.2
+
+          ports:
+            - containerPort: 3004
+
+          envFrom:
+            - configMapRef:
+                name: matching-service-config
+            - secretRef:
+                name: matching-service-secrets
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "128Mi"
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+            initialDelaySeconds: 15
+            periodSeconds: 10

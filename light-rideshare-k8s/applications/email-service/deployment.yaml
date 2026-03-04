@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: email-service
+    namespace: rideshare-app
+    labels:
+      app: email-service
+spec:
+    replicas: 2
+    selector:
+      matchLabels:
+        app: email-service
+    template:
+      metadata:
+        labels:
+          app: email-service
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                          - email-service
+                  topologyKey: topology.kubernetes.io/zone
+        containers:
+          - name: email-service
+            image: 221693237976.dkr.ecr.us-east-1.amazonaws.com/rideshare-email-service:1.2
+            ports:
+              - containerPort: 3002
+            envFrom:
+              - configMapRef:
+                  name: email-service-config
+              - secretRef:
+                  name: email-service-secrets
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
+            readinessProbe:
+              httpGet:
+                path: /api/v1/email/health
+                port: 3002
+              initialDelaySeconds: 10
+              periodSeconds: 5
+            livenessProbe:
+              httpGet:
+                path: /api/v1/email/health
+                port: 3002
+              initialDelaySeconds: 30
+              periodSeconds: 10

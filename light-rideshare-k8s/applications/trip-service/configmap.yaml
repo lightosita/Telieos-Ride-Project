@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: trip-service-config
+    namespace: rideshare-app
+data:
+    PORT: "3005"
+    DEBUG: "False"
+    ALLOWED_ORIGINS: "https://light.rideshare.teleioslabs.net,http://localhost:3000"
