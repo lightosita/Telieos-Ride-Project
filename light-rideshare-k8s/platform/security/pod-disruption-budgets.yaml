@@ -1,0 +1,111 @@
+# 1. RIDER SERVICE — minAvailable: 2
+#    Hot path: all ride requests enter here. Must stay up during node drains.
+# -----------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rider-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: rider-service
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: rider-service
+
+---
+# -----------------------------------------------------------------------------
+# 2. DRIVER SERVICE — minAvailable: 2
+#    High-frequency location writes. 2 pods needed to handle load safely.
+# -----------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: driver-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: driver-service
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: driver-service
+
+---
+# -----------------------------------------------------------------------------
+# 3. TRIP SERVICE — minAvailable: 1
+#    Lower traffic than matching/rider. One pod handles in-flight state updates.
+# -----------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: trip-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: trip-service
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: trip-service
+
+---
+# -----------------------------------------------------------------------------
+# 4. MATCHING SERVICE — minAvailable: 2
+#    Critical hot path — runs on every ride request. Never goes fully offline.
+# -----------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: matching-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: matching-service
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: matching-service
+
+---
+# -----------------------------------------------------------------------------
+# 5. EMAIL SERVICE — minAvailable: 1
+#    Stateless, async. One pod processes in-flight email requests during drain.
+# -----------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: email-service-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: email-service
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: email-service
+
+---
+# -----------------------------------------------------------------------------
+# 6. FRONTEND — minAvailable: 1
+#    UI must stay accessible. One pod serves traffic while the other drains.
+# -----------------------------------------------------------------------------
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: default
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/component: pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: frontend
