@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwiftRide — Architecture Documentation</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-card: #161b22;
+      --bg-card-hover: #1c2333;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #e94560;
+      --accent-glow: rgba(233, 69, 96, 0.25);
+      --accent-secondary: #533483;
+      --border: #30363d;
+      --gradient-1: linear-gradient(135deg, #e94560 0%, #533483 100%);
+      --gradient-2: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+      --radius: 12px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      scroll-behavior: smooth;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: 80px 24px 60px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(233, 69, 96, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(83, 52, 131, 0.1) 0%, transparent 50%);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(233, 69, 96, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      color: var(--text-secondary);
+      font-size: 1.15rem;
+      max-width: 700px;
+      margin: 0 auto 28px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .hero-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Export Bar ── */
+    .export-bar {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+
+    .export-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .export-btn:hover {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+      box-shadow: 0 0 16px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    .export-btn.primary {
+      background: var(--gradient-1);
+      border: none;
+      color: #fff;
+    }
+
+    .export-btn.primary:hover {
+      opacity: 0.9;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    /* ── Navigation ── */
+    .toc {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+    }
+
+    .toc-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      padding: 8px 0;
+    }
+
+    .toc a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .toc a:hover,
+    .toc a.active {
+      color: var(--text-primary);
+      background: var(--bg-card-hover);
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 64px;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+
+    .section-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--gradient-1);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .section h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .section-desc {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+      max-width: 800px;
+      line-height: 1.8;
+    }
+
+    /* ── Diagram Card ── */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .diagram-card:hover {
+      border-color: rgba(233, 69, 96, 0.3);
+    }
+
+    .diagram-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .diagram-toolbar-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .diagram-toolbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .diagram-toolbar-actions button {
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .diagram-toolbar-actions button:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    .diagram-body {
+      padding: 40px 32px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      min-height: 500px;
+      align-items: center;
+    }
+
+    .diagram-body .mermaid {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .diagram-body .mermaid svg {
+      width: 100% !important;
+      min-height: 450px;
+      height: auto !important;
+      max-width: none;
+    }
+
+    /* Keep folder diagram at a reasonable size */
+    #diagram-folders svg {
+      min-height: 350px;
+    }
+
+    /* Make sequence diagram extra tall */
+    #diagram-sequence svg {
+      min-height: 600px;
+    }
+
+    /* Make frontend diagram extra tall */
+    #diagram-frontend svg {
+      min-height: 600px;
+    }
+
+    /* ── Documentation Blocks ── */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .doc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: all 0.25s ease;
+    }
+
+    .doc-card:hover {
+      border-color: rgba(233, 69, 96, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .doc-card h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .doc-card p {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+
+    .doc-card ul {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      line-height: 1.9;
+      padding-left: 18px;
+    }
+
+    .doc-card .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .badge-ts {
+      background: #1e3a5f;
+      color: #58a6ff;
+    }
+
+    .badge-py {
+      background: #2d1f3d;
+      color: #c084fc;
+    }
+
+    .badge-go {
+      background: #1a3329;
+      color: #56d364;
+    }
+
+    .badge-next {
+      background: #3d2a1f;
+      color: #f0883e;
+    }
+
+    .badge-redis {
+      background: #3d1f1f;
+      color: #f85149;
+    }
+
+    /* ── Table ── */
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-top: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 14px 20px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-secondary);
+    }
+
+    td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    td:first-child {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      display: flex;
+      gap: 14px;
+      background: rgba(233, 69, 96, 0.06);
+      border: 1px solid rgba(233, 69, 96, 0.15);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin: 20px 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .callout-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    /* ── Print ── */
+    @media print {
+
+      .toc,
+      .export-bar,
+      .diagram-toolbar-actions {
+        display: none !important;
+      }
+
+      body {
+        background: #fff;
+        color: #000;
+      }
+
+      .hero {
+        padding: 40px 24px 30px;
+        background: none;
+        border-bottom: 2px solid #000;
+      }
+
+      .hero h1 {
+        background: none;
+        -webkit-text-fill-color: #000;
+        color: #000;
+      }
+
+      .hero p,
+      .section-desc,
+      .doc-card p,
+      .doc-card ul,
+      td {
+        color: #333;
+      }
+
+      .diagram-card,
+      .doc-card,
+      .table-wrapper {
+        border-color: #ccc;
+        box-shadow: none;
+      }
+
+      .section-number {
+        background: #000;
+      }
+
+      .callout {
+        background: #f8f8f8;
+        border-color: #ccc;
+        color: #333;
+      }
+
+      th {
+        background: #f0f0f0;
+        color: #333;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════ HERO ════════════ -->
+  <header class="hero">
+    <h1>SwiftRide Architecture</h1>
+    <p>Comprehensive documentation of the SwiftRide rideshare platform — a microservices-based system built with
+      Node.js, Python, Go, and Next.js.</p>
+    <div class="hero-meta">
+      <span>📦 7 Microservices</span>
+      <span>🔧 4 Languages</span>
+      <span>🐳 Fully Dockerized</span>
+      <span>📡 Redis Pub/Sub + WebSocket</span>
+    </div>
+    <div class="export-bar">
+      <button class="export-btn primary" onclick="exportAllSVG()">⬇ Export All Diagrams (SVG)</button>
+      <button class="export-btn" onclick="exportAllPNG()">🖼️ Export All Diagrams (PNG)</button>
+      <button class="export-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+  </header>
+
+  <!-- ════════════ NAV ════════════ -->
+  <nav class="toc">
+    <div class="toc-inner">
+      <a href="#overview">System Overview</a>
+      <a href="#services">Service Details</a>
+      <a href="#folder-structure">Folder Structure</a>
+      <a href="#communication">Communication Flow</a>
+      <a href="#tech-stack">Tech Stack</a>
+      <a href="#frontend">Frontend Architecture</a>
+    </div>
+  </nav>
+
+  <!-- ════════════ CONTENT ════════════ -->
+  <main class="container">
+
+    <!-- ── 1. SYSTEM OVERVIEW ── -->
+    <section class="section" id="overview">
+      <div class="section-header">
+        <span class="section-number">1</span>
+        <h2>High-Level System Overview</h2>
+      </div>
+      <p class="section-desc">
+        SwiftRide is a rideshare platform composed of <strong>7 independent microservices</strong>, each owning its own
+        data and deployable independently via Docker. The frontend communicates with backend services over <strong>REST
+          APIs</strong> and <strong>WebSockets</strong>. Backend services coordinate through <strong>Redis
+          Pub/Sub</strong> for real-time ride matching and trip event propagation.
+      </p>
+
+      <div class="callout">
+        <span class="callout-icon">💡</span>
+        <div>
+          <strong>Key Design Principle:</strong> Each service is a separate Git repository with its own Dockerfile and
+          docker-compose.yml, enabling independent development, testing, and deployment. The
+          <code>rideshare-infra</code> repo provides shared infrastructure (Redis) used by all services.
+        </div>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-toolbar">
+          <span class="diagram-toolbar-label">Mermaid · System Architecture</span>
+          <div class="diagram-toolbar-actions">
+            <button onclick="exportSingleSVG('diagram-overview')">SVG</button>
+            <button onclick="exportSinglePNG('diagram-overview')">PNG</button>
+          </div>
+        </div>
+        <div class="diagram-body">
+          <pre class="mermaid" id="diagram-overview">
+graph TB
+    subgraph Frontend["🖥️ rideshare-frontend · Next.js / TypeScript"]
+        FE_App["App Router (Pages)"]
+        FE_Components["React Components"]
+        FE_Hooks["Hooks (WebSocket, Auth, Location)"]
+        FE_Store["Redux Store"]
+        FE_Utils["API Clients (riderApi, driverApi, tripAPI)"]
+    end
+
+    subgraph DriverService["🚗 rideshare-driver-service · Node.js / TypeScript"]
+        DS_Routes["Express Routes"]
+        DS_Controllers["Controllers"]
+        DS_Models["Sequelize Models"]
+        DS_Utils["Utils (Auth, Email Client, Trip Client)"]
+    end
+
+    subgraph RiderService["🧑 rideshare-rider-service · Node.js / TypeScript"]
+        RS_Routes["Express Routes"]
+        RS_Controllers["Controllers"]
+        RS_Models["Sequelize Models"]
+        RS_Utils["Utils (Auth, Email Client, Trip Client)"]
+    end
+
+    subgraph TripService["🗺️ rideshare-trip-service · Python / Flask"]
+        TS_Routes["Routes (trips, fares, analytics)"]
+        TS_Services["Services (trip_service, fare_service)"]
+        TS_Events["Event Handlers"]
+        TS_WS["WebSocket Gateway"]
+    end
+
+    subgraph MatchingService["🔀 rideshare-matching-service · Go"]
+        MS_Server["HTTP Server"]
+        MS_Service["Matching Engine"]
+        MS_Redis["Redis Listener"]
+        MS_Worker["Worker Pool"]
+    end
+
+    subgraph EmailService["📧 rideshare-email-service · Python"]
+        ES_Main["Email API (main.py)"]
+    end
+
+    subgraph Infra["🏗️ rideshare-infra · Docker"]
+        Redis[("Redis")]
+    end
+
+    FE_Utils -->|"REST"| DS_Routes
+    FE_Utils -->|"REST"| RS_Routes
+    FE_Utils -->|"REST"| TS_Routes
+    FE_Hooks -->|"WebSocket"| TS_WS
+
+    DS_Utils -->|"HTTP"| TS_Routes
+    DS_Utils -->|"HTTP"| ES_Main
+    RS_Utils -->|"HTTP"| TS_Routes
+    RS_Utils -->|"HTTP"| ES_Main
+
+    TS_Events -->|"Pub/Sub"| Redis
+    Redis -->|"Pub/Sub"| MS_Redis
+    MS_Service -->|"Read/Write"| Redis
+
+    style Frontend fill:#1a1a2e,stroke:#e94560,color:#fff
+    style DriverService fill:#16213e,stroke:#0f3460,color:#fff
+    style RiderService fill:#16213e,stroke:#0f3460,color:#fff
+    style TripService fill:#1a1a2e,stroke:#533483,color:#fff
+    style MatchingService fill:#0f3460,stroke:#e94560,color:#fff
+    style EmailService fill:#16213e,stroke:#e94560,color:#fff
+    style Infra fill:#533483,stroke:#e94560,color:#fff
+        </pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2. SERVICE DETAILS ── -->
+    <section class="section" id="services">
+      <div class="section-header">
+        <span class="section-number">2</span>
+        <h2>Service Documentation</h2>
+      </div>
+      <p class="section-desc">
+        Each microservice has a clearly defined responsibility within the platform. Below is a detailed description of
+        every service, its role, internal architecture, and key files.
+      </p>
+
+      <div class="doc-grid">
+        <div class="doc-card">
+          <h4>🖥️ rideshare-frontend</h4>
+          <p><span class="badge badge-next">Next.js</span> <span class="badge badge-ts">TypeScript</span></p>
+          <p>The user-facing web application providing interfaces for both <strong>riders</strong> and
+            <strong>drivers</strong>. Uses the App Router for page routing and Mapbox for real-time map rendering.</p>
+          <ul>
+            <li><strong>app/</strong> — Page routing: auth, dashboard, driver, active-ride</li>
+            <li><strong>src/components/</strong> — UI: Authentication, Dashboard, Driver-Dashboard, Maps, Trip</li>
+            <li><strong>hooks/</strong> — WebSocket provider, driver location tracking, protected routes</li>
+            <li><strong>store/</strong> — Redux state management</li>
+            <li><strong>utils/</strong> — API clients: <code>riderApi.ts</code>, <code>driverApi.ts</code>,
+              <code>tripAPI.ts</code></li>
+            <li><strong>types/</strong> — TypeScript interfaces: driver, rider, ride, trip, vehicle</li>
+          </ul>
+        </div>
+
+        <div class="doc-card">
+          <h4>🚗 rideshare-driver-service</h4>
+          <p><span class="badge badge-ts">Node.js / TypeScript</span> <span class="badge badge-redis">Redis</span></p>
+          <p>Handles all driver-related operations: registration, authentication, profile management, and vehicle
+            information. Communicates with the Trip and Email services.</p>
+          <ul>
+            <li><strong>src/controllers/</strong> — Business logic for driver endpoints</li>
+            <li><strong>src/routes/</strong> — Express route definitions</li>
+            <li><strong>src/models/</strong> — Sequelize/Mongoose data models</li>
+            <li><strong>src/middleware/</strong> — Auth middleware (JWT validation)</li>
+            <li><strong>src/config/</strong> — Database, Redis, and Swagger configuration</li>
+            <li><strong>src/utils/</strong> — Auth helpers, email client, trip client, validation</li>
+            <li><strong>src/migrations/</strong> — Database migration scripts</li>
+          </ul>
+        </div>
+
+        <div class="doc-card">
+          <h4>🧑 rideshare-rider-service</h4>
+          <p><span class="badge badge-ts">Node.js / TypeScript</span> <span class="badge badge-redis">Redis</span></p>
+          <p>Manages rider accounts: registration, login, profile, and ride history. Structurally similar to the driver
+            service, sharing the same architectural patterns.</p>
+          <ul>
+            <li><strong>src/controllers/</strong> — Rider CRUD operations</li>
+            <li><strong>src/routes/</strong> — Express route definitions with Swagger docs</li>
+            <li><strong>src/models/</strong> — Data models</li>
+            <li><strong>src/middleware/</strong> — Authentication middleware</li>
+            <li><strong>src/config/</strong> — Database and Redis config</li>
+            <li><strong>src/utils/</strong> — Auth, email client, trip client, validation</li>
+            <li><strong>src/types/</strong> — TypeScript type definitions</li>
+          </ul>
+        </div>
+
+        <div class="doc-card">
+          <h4>🗺️ rideshare-trip-service</h4>
+          <p><span class="badge badge-py">Python / Flask</span> <span class="badge badge-redis">Redis</span></p>
+          <p>The core trip management engine. Handles ride requests, fare calculation, trip lifecycle, analytics, and
+            real-time updates via WebSocket. Publishes events to Redis for matching.</p>
+          <ul>
+            <li><strong>routes/</strong> — <code>trips.py</code>, <code>fares.py</code>, <code>analytics.py</code></li>
+            <li><strong>services/</strong> — <code>trip_service.py</code> (lifecycle), <code>fare_service.py</code>
+              (pricing)</li>
+            <li><strong>events/</strong> — <code>event_handlers.py</code> — Redis event pub/sub</li>
+            <li><strong>models.py</strong> — Database models for trips</li>
+            <li><strong>websocket_gateway.py</strong> — Real-time push to riders & drivers</li>
+            <li><strong>utils/</strong> — <code>database.py</code>, <code>redis_client.py</code>, <code>health.py</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="doc-card">
+          <h4>🔀 rideshare-matching-service</h4>
+          <p><span class="badge badge-go">Go</span> <span class="badge badge-redis">Redis</span></p>
+          <p>High-performance driver-rider matching engine written in Go. Listens for ride requests via Redis and uses a
+            worker pool to find optimal driver matches based on proximity and availability.</p>
+          <ul>
+            <li><strong>main.go</strong> — Entry point, server initialization</li>
+            <li><strong>server/</strong> — HTTP server setup</li>
+            <li><strong>service/</strong> — <code>matching.go</code> (algorithm), <code>redis_listener.go</code></li>
+            <li><strong>worker/</strong> — Concurrent worker pool for matching</li>
+            <li><strong>pool/</strong> — Connection pool management</li>
+            <li><strong>models/</strong> & <strong>types/</strong> — Data structures</li>
+            <li><strong>database/</strong> — Database access layer</li>
+            <li><strong>redis/</strong> — Redis client wrapper</li>
+          </ul>
+        </div>
+
+        <div class="doc-card">
+          <h4>📧 rideshare-email-service</h4>
+          <p><span class="badge badge-py">Python</span></p>
+          <p>Lightweight email delivery service. Called by the driver and rider services to send transactional emails
+            such as verification, password resets, and ride confirmations.</p>
+          <ul>
+            <li><strong>main.py</strong> — Single-file service with email endpoints</li>
+            <li>Called internally by driver and rider services via HTTP</li>
+            <li>Dockerized for standalone deployment</li>
+          </ul>
+        </div>
+
+        <div class="doc-card">
+          <h4>🏗️ rideshare-infra</h4>
+          <p><span class="badge badge-redis">Redis</span> <span class="badge"
+              style="background:#1f3d2d;color:#56d364">Docker</span></p>
+          <p>Shared infrastructure configuration. Currently hosts the Redis instance used by multiple services for
+            pub/sub messaging, caching, and session management.</p>
+          <ul>
+            <li><strong>docker-compose.redis.yml</strong> — Redis container configuration</li>
+            <li>Provides the messaging backbone for matching and trip events</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. FOLDER STRUCTURE ── -->
+    <section class="section" id="folder-structure">
+      <div class="section-header">
+        <span class="section-number">3</span>
+        <h2>Project Folder Structure</h2>
+      </div>
+      <p class="section-desc">
+        This diagram shows the internal directory structure of each microservice. Every service is a standalone project
+        with its own package manager, Dockerfile, and configuration.
+      </p>
+
+      <div class="diagram-card">
+        <div class="diagram-toolbar">
+          <span class="diagram-toolbar-label">Mermaid · Folder Tree</span>
+          <div class="diagram-toolbar-actions">
+            <button onclick="exportSingleSVG('diagram-folders')">SVG</button>
+            <button onclick="exportSinglePNG('diagram-folders')">PNG</button>
+          </div>
+        </div>
+        <div class="diagram-body">
+          <pre class="mermaid" id="diagram-folders">
+graph LR
+    Root["swiftride/"]
+
+    Root --- FE["rideshare-frontend/"]
+    Root --- DS["rideshare-driver-service/"]
+    Root --- RS["rideshare-rider-service/"]
+    Root --- TS["rideshare-trip-service/"]
+    Root --- MS["rideshare-matching-service/"]
+    Root --- ES["rideshare-email-service/"]
+    Root --- IN["rideshare-infra/"]
+
+    FE --- FE_app["app/ (pages)"]
+    FE --- FE_src["src/components/"]
+    FE --- FE_hooks["hooks/"]
+    FE --- FE_store["store/"]
+    FE --- FE_types["types/"]
+    FE --- FE_utils["utils/"]
+
+    DS --- DS_src["src/"]
+    DS_src --- DS_ctrl["controllers/"]
+    DS_src --- DS_routes["routes/"]
+    DS_src --- DS_models["models/"]
+    DS_src --- DS_config["config/"]
+    DS_src --- DS_utils["utils/"]
+    DS_src --- DS_mid["middleware/"]
+    DS_src --- DS_mig["migrations/"]
+
+    RS --- RS_src["src/"]
+    RS_src --- RS_ctrl["controllers/"]
+    RS_src --- RS_routes["routes/"]
+    RS_src --- RS_models["models/"]
+    RS_src --- RS_config["config/"]
+    RS_src --- RS_utils["utils/"]
+    RS_src --- RS_mid["middleware/"]
+    RS_src --- RS_types["types/"]
+
+    TS --- TS_routes["routes/"]
+    TS --- TS_services["services/"]
+    TS --- TS_events["events/"]
+    TS --- TS_models2["models.py"]
+    TS --- TS_utils2["utils/"]
+    TS --- TS_ws["websocket_gateway.py"]
+
+    MS --- MS_main["main.go"]
+    MS --- MS_server["server/"]
+    MS --- MS_svc["service/"]
+    MS --- MS_worker["worker/"]
+    MS --- MS_pool["pool/"]
+    MS --- MS_db["database/"]
+    MS --- MS_models2["models/"]
+    MS --- MS_redis2["redis/"]
+
+    ES --- ES_main["main.py"]
+
+    IN --- IN_redis["docker-compose.redis.yml"]
+
+    style Root fill:#e94560,stroke:#fff,color:#fff
+        </pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4. COMMUNICATION FLOW ── -->
+    <section class="section" id="communication">
+      <div class="section-header">
+        <span class="section-number">4</span>
+        <h2>Service Communication Flow</h2>
+      </div>
+      <p class="section-desc">
+        This sequence diagram illustrates the <strong>complete lifecycle of a ride request</strong> — from rider
+        authentication through ride matching, trip execution, and completion. It shows how services interact using REST,
+        WebSocket, and Redis Pub/Sub.
+      </p>
+
+      <div class="callout">
+        <span class="callout-icon">🔄</span>
+        <div>
+          <strong>Communication Protocols:</strong>
+          <strong>REST API</strong> for synchronous request-response (auth, profile, booking).
+          <strong>WebSocket</strong> for real-time push to frontend (trip status, driver location).
+          <strong>Redis Pub/Sub</strong> for async inter-service events (ride requests, match results).
+        </div>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-toolbar">
+          <span class="diagram-toolbar-label">Mermaid · Sequence Diagram</span>
+          <div class="diagram-toolbar-actions">
+            <button onclick="exportSingleSVG('diagram-sequence')">SVG</button>
+            <button onclick="exportSinglePNG('diagram-sequence')">PNG</button>
+          </div>
+        </div>
+        <div class="diagram-body">
+          <pre class="mermaid" id="diagram-sequence">
+sequenceDiagram
+    participant Rider as 🧑 Rider (Frontend)
+    participant Driver as 🚗 Driver (Frontend)
+    participant RiderSvc as Rider Service
+    participant DriverSvc as Driver Service
+    participant TripSvc as Trip Service
+    participant MatchSvc as Matching Service
+    participant EmailSvc as Email Service
+    participant Redis as Redis
+
+    rect rgb(22, 33, 62)
+    Note over Rider,EmailSvc: Authentication Phase
+    Rider->>RiderSvc: POST /register or /login
+    Driver->>DriverSvc: POST /register or /login
+    RiderSvc->>EmailSvc: Send verification email
+    DriverSvc->>EmailSvc: Send verification email
+    EmailSvc-->>Rider: Verification email delivered
+    EmailSvc-->>Driver: Verification email delivered
+    end
+
+    rect rgb(26, 26, 46)
+    Note over Rider,Redis: Ride Request & Matching Phase
+    Rider->>TripSvc: POST /trips/request (pickup, destination)
+    TripSvc->>TripSvc: Calculate fare estimate
+    TripSvc->>Redis: PUBLISH ride_request event
+    Redis->>MatchSvc: SUBSCRIBE ride_request
+    MatchSvc->>MatchSvc: Query nearby available drivers
+    MatchSvc->>Redis: PUBLISH match_result
+    Redis->>TripSvc: SUBSCRIBE match_result
+    TripSvc-->>Rider: WebSocket: Driver matched!
+    TripSvc-->>Driver: WebSocket: New ride request!
+    end
+
+    rect rgb(15, 52, 96)
+    Note over Driver,TripSvc: Trip Execution Phase
+    Driver->>DriverSvc: Accept trip
+    DriverSvc->>TripSvc: PUT /trips/:id/status (accepted)
+    TripSvc-->>Rider: WebSocket: Driver en route
+    Driver->>DriverSvc: Update location
+    DriverSvc->>TripSvc: PUT /trips/:id/location
+    TripSvc-->>Rider: WebSocket: Live driver location
+    Driver->>DriverSvc: Start trip
+    DriverSvc->>TripSvc: PUT /trips/:id/status (in_progress)
+    TripSvc-->>Rider: WebSocket: Trip started
+    end
+
+    rect rgb(83, 52, 131)
+    Note over Driver,EmailSvc: Completion Phase
+    Driver->>DriverSvc: Complete trip
+    DriverSvc->>TripSvc: PUT /trips/:id/status (completed)
+    TripSvc->>TripSvc: Calculate final fare
+    TripSvc-->>Rider: WebSocket: Trip completed + fare
+    TripSvc->>EmailSvc: Send ride receipt
+    end
+        </pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5. TECH STACK ── -->
+    <section class="section" id="tech-stack">
+      <div class="section-header">
+        <span class="section-number">5</span>
+        <h2>Technology Stack</h2>
+      </div>
+      <p class="section-desc">
+        A comparison of the languages, frameworks, databases, and communication protocols used by each service. The
+        polyglot architecture leverages the strengths of each technology — Go for performance-critical matching, Node.js
+        for rapid API development, Python for data-oriented services, and Next.js for the frontend.
+      </p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Language</th>
+              <th>Framework</th>
+              <th>Database</th>
+              <th>Messaging</th>
+              <th>Port / Protocol</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>rideshare-frontend</td>
+              <td>TypeScript</td>
+              <td>Next.js (App Router)</td>
+              <td>—</td>
+              <td>WebSocket</td>
+              <td>3000 / HTTP</td>
+            </tr>
+            <tr>
+              <td>rideshare-driver-service</td>
+              <td>TypeScript</td>
+              <td>Express.js</td>
+              <td>PostgreSQL / MongoDB</td>
+              <td>Redis</td>
+              <td>REST API</td>
+            </tr>
+            <tr>
+              <td>rideshare-rider-service</td>
+              <td>TypeScript</td>
+              <td>Express.js</td>
+              <td>PostgreSQL / MongoDB</td>
+              <td>Redis</td>
+              <td>REST API</td>
+            </tr>
+            <tr>
+              <td>rideshare-trip-service</td>
+              <td>Python</td>
+              <td>Flask</td>
+              <td>PostgreSQL / MongoDB</td>
+              <td>Redis, WebSocket</td>
+              <td>REST + WS</td>
+            </tr>
+            <tr>
+              <td>rideshare-matching-service</td>
+              <td>Go</td>
+              <td>net/http</td>
+              <td>—</td>
+              <td>Redis Pub/Sub</td>
+              <td>REST API</td>
+            </tr>
+            <tr>
+              <td>rideshare-email-service</td>
+              <td>Python</td>
+              <td>FastAPI / Flask</td>
+              <td>—</td>
+              <td>—</td>
+              <td>REST API</td>
+            </tr>
+            <tr>
+              <td>rideshare-infra</td>
+              <td>—</td>
+              <td>Docker Compose</td>
+              <td>Redis</td>
+              <td>—</td>
+              <td>6379</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 6. FRONTEND ARCHITECTURE ── -->
+    <section class="section" id="frontend">
+      <div class="section-header">
+        <span class="section-number">6</span>
+        <h2>Frontend Component Architecture</h2>
+      </div>
+      <p class="section-desc">
+        The frontend follows the <strong>Next.js App Router</strong> pattern. Pages are defined in <code>app/</code>,
+        reusable UI components live in <code>src/components/</code>, and shared logic (API clients, hooks, types) is
+        organized into dedicated directories. Below is the full component tree.
+      </p>
+
+      <div class="diagram-card">
+        <div class="diagram-toolbar">
+          <span class="diagram-toolbar-label">Mermaid · Component Tree</span>
+          <div class="diagram-toolbar-actions">
+            <button onclick="exportSingleSVG('diagram-frontend')">SVG</button>
+            <button onclick="exportSinglePNG('diagram-frontend')">PNG</button>
+          </div>
+        </div>
+        <div class="diagram-body">
+          <pre class="mermaid" id="diagram-frontend">
+graph TD
+    App["App Layout (layout.tsx)"]
+    App --> Auth["auth/ pages"]
+    App --> Dash["dashboard/ pages"]
+    App --> DrvPage["driver/ pages"]
+    App --> ActiveRide["active-ride/ page"]
+
+    subgraph Components["src/components/"]
+        subgraph AuthComp["Authentication/"]
+            Login["Login"]
+            Register["Register"]
+            UserReg["UserRegisterForm"]
+            DriverReg["DriverRegisterForm"]
+            PwReset["PasswordReset Forms"]
+            Spinner["LoadingSpinner"]
+        end
+        subgraph DashComp["Dashboard/"]
+            ReqRide["RequestRide"]
+            Profile["Profile"]
+            RideHist["RideHistory"]
+            ActiveRide2["ActiveRide"]
+        end
+        subgraph DriverComp["Driver-Dashboard/"]
+            DrvDash["DriverDashboard"]
+            ActiveTrip["activeTrip"]
+            DrvStats["driverStats"]
+            Earning["earningSummary"]
+            LocMap["locationMap"]
+            OnlineToggle["onlineToggle"]
+            RideReqModal["rideRequestModal"]
+            TripHist["tripHistory"]
+        end
+        subgraph TripComp["trip/"]
+            MapSection["MapSection"]
+            TripActions["TripActions"]
+            TripRoute["TripRoute"]
+            TripStats["TripStats"]
+            RiderInfo["RiderInfo"]
+            TripHeader["TripHeader"]
+            EmBtn["EmergencyButton"]
+        end
+        subgraph MapsComp["maps/"]
+            LiveMap["LiveDriverMap"]
+            MapContainer["MapContainer"]
+            Autocomplete["MapboxAutocomplete"]
+        end
+        Nav["Navbar"]
+        Modal["Modal"]
+        ConfModal["ConfirmationModal"]
+    end
+
+    Auth --> AuthComp
+    Dash --> DashComp
+    DrvPage --> DriverComp
+    ActiveRide --> TripComp
+
+    subgraph Hooks["hooks/"]
+        WSProvider["WebsocketProvider"]
+        UseDriverLoc["useDriverLocation"]
+        UseProtected["useProtectedRoute"]
+        UseTripWS["useTripWebSocket"]
+    end
+
+    subgraph Utils["utils/"]
+        RiderAPI["riderApi.ts"]
+        DriverAPI["driverApi.ts"]
+        TripAPI["tripAPI.ts"]
+    end
+
+    subgraph Types["types/"]
+        TDriver["driver.ts"]
+        TRider["rider.ts"]
+        TRide["ride.ts"]
+        TTrip["trip.ts"]
+        TVehicle["vehicleType.ts"]
+    end
+
+    style App fill:#e94560,stroke:#fff,color:#fff
+    style Components fill:#1a1a2e,stroke:#e94560,color:#fff
+    style Hooks fill:#16213e,stroke:#0f3460,color:#fff
+    style Utils fill:#16213e,stroke:#533483,color:#fff
+    style Types fill:#0f3460,stroke:#e94560,color:#fff
+        </pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    SwiftRide Architecture Documentation · Generated February 2026 · Teleios Community
+  </footer>
+
+  <!-- ════════════ SCRIPTS ════════════ -->
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        primaryColor: '#1a1a2e',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#30363d',
+        lineColor: '#e94560',
+        secondaryColor: '#16213e',
+        tertiaryColor: '#0f3460',
+        fontSize: '18px'
+      },
+      flowchart: { curve: 'basis', padding: 30, nodeSpacing: 60, rankSpacing: 80 },
+      sequence: { mirrorActors: false, messageAlign: 'center', width: 220, height: 50, boxMargin: 16, noteMargin: 20, messageFontSize: 16, actorFontSize: 16 }
+    });
+
+    // ── Export a single diagram as SVG ──
+    function exportSingleSVG(id) {
+      const el = document.getElementById(id);
+      const svg = el.querySelector('svg') || el;
+      const svgData = svg.outerHTML;
+      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      downloadBlob(blob, id + '.svg');
+    }
+
+    // ── Export a single diagram as PNG ──
+    function exportSinglePNG(id) {
+      const el = document.getElementById(id);
+      const svg = el.querySelector('svg') || el;
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = function () {
+        const scale = 2;
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        ctx.fillStyle = '#0d1117';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function (blob) {
+          downloadBlob(blob, id + '.png');
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      };
+      img.src = url;
+    }
+
+    // ── Export all diagrams ──
+    function exportAllSVG() {
+      ['diagram-overview', 'diagram-folders', 'diagram-sequence', 'diagram-frontend'].forEach(exportSingleSVG);
+    }
+    function exportAllPNG() {
+      ['diagram-overview', 'diagram-folders', 'diagram-sequence', 'diagram-frontend'].forEach(exportSinglePNG);
+    }
+
+    // ── Download helper ──
+    function downloadBlob(blob, filename) {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(link.href), 100);
+    }
+
+    // ── Sticky nav highlight ──
+    const sections = document.querySelectorAll('.section');
+    const navLinks = document.querySelectorAll('.toc a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+      });
+    });
+  </script>
+</body>
+
+</html>
