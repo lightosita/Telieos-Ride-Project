@@ -88,6 +88,11 @@ jobs:
       - name: Verify cluster connection
         run: kubectl get nodes
 
+      - name: Create namespaces (idempotent)
+        run: |
+          kubectl create namespace rideshare-app --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create namespace rideshare-prod --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Apply secrets config
         run: |
           kubectl apply -f light-rideshare-k8s/platform/secrets/secret-store.yaml
