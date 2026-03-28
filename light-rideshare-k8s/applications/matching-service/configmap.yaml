@@ -7,5 +7,5 @@ metadata:
 data:
   NODE_ENV: "production"
   PORT: "3004"
-  REDIS_TLS: "true"
+  REDIS_TLS: "false"
   TRIP_SERVICE_URL: "http://trip-service.rideshare-app.svc.cluster.local:3005/api/v1/trips"
