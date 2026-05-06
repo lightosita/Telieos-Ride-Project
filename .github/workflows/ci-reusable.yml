@@ -77,7 +77,8 @@ jobs:
       - name: Lint check (Python)
         if: inputs.runtime == 'python'
         working-directory: ${{ inputs.service-path }}
-       run: flake8 . --max-line-length=200 --exclude=__pycache__ --ignore=E302,W293,W292,E501,F401,W291,E402,F841,F541,E111,E117,E261,E305,W504,W503,E241
+        run: flake8 . --max-line-length=200 --exclude=__pycache__ --ignore=E302,W293,W292,E501,F401,W291,E402,F841,F541,E111,E117,E261,E305,W504,W503,E241
+
       # ── Go validation ───────────────────────────────────────────────
       - name: Set up Go
         if: inputs.runtime == 'golang'
