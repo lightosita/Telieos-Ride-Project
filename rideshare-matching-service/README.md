@@ -161,3 +161,4 @@ Driver accepts → POST /api/v1/ride/accept (to driver or gateway service)
      ↓ Publishes "ride.accepted" → Redis
      ↓ Rider App receives update (via another Pub/Sub or push)
 ```
+# retest

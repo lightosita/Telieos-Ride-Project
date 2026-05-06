@@ -53,4 +53,4 @@ docker run -d -p 3005:3005 -p 3006:3006 `
 ### 4. Verify Service
 
 - API: http://localhost:3005
-- Docs: http://localhost:3005/api-docs
+- Docs: http://localhost:3005/api-docs# retest
