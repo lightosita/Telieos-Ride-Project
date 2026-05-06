@@ -63,3 +63,4 @@ docker run -d -p 3001:3001 `
 
 - Health Check: http://localhost:3001/api/v1/riders/health
 - Docs: http://localhost:3001/api/v1/riders/docs
+# CI Test
