@@ -1,0 +1,94 @@
+name: Reusable CI Pipeline
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+      service-path:
+        required: true
+        type: string
+      runtime:
+        required: true
+        type: string
+        description: "nodejs, python, or golang"
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_REGION:
+        required: true
+      ECR_REGISTRY:
+        required: true
+
+jobs:
+  ci:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── AWS Authentication ──────────────────────────────────────────
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ── Node.js validation ──────────────────────────────────────────
+      - name: Install dependencies (Node.js)
+        if: inputs.runtime == 'nodejs'
+        working-directory: ${{ inputs.service-path }}
+        run: npm ci
+
+      - name: TypeScript build check (Node.js)
+        if: inputs.runtime == 'nodejs'
+        working-directory: ${{ inputs.service-path }}
+        run: npm run build
+
+      # ── Python validation ───────────────────────────────────────────
+      - name: Install dependencies (Python)
+        if: inputs.runtime == 'python'
+        working-directory: ${{ inputs.service-path }}
+        run: |
+          pip install -r requirements.txt
+          pip install flake8
+
+      - name: Lint check (Python)
+        if: inputs.runtime == 'python'
+        working-directory: ${{ inputs.service-path }}
+        run: flake8 . --max-line-length=120 --exclude=__pycache__
+
+      # ── Go validation ───────────────────────────────────────────────
+      - name: Set up Go
+        if: inputs.runtime == 'golang'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Download Go modules
+        if: inputs.runtime == 'golang'
+        working-directory: ${{ inputs.service-path }}
+        run: go mod download
+
+      - name: Go build check
+        if: inputs.runtime == 'golang'
+        working-directory: ${{ inputs.service-path }}
+        run: go build ./...
+
+      # ── Docker build and push (all services) ────────────────────────
+      - name: Build and push Docker image
+        uses: ./.github/actions/docker-build-push
+        with:
+          service-name: ${{ inputs.service-name }}
+          service-path: ${{ inputs.service-path }}
+          ecr-registry: ${{ secrets.ECR_REGISTRY }}
+          image-tag: ${{ github.sha }}

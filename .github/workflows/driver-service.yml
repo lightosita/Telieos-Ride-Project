@@ -1,0 +1,24 @@
+name: Driver Service CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "rideshare-driver-service/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "rideshare-driver-service/**"
+
+jobs:
+  build:
+    uses: ./.github/workflows/ci-reusable.yml
+    with:
+      service-name: driver-service
+      service-path: rideshare-driver-service
+      runtime: nodejs
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}

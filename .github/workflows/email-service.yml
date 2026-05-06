@@ -1,0 +1,24 @@
+name: Email Service CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "rideshare-email-service/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "rideshare-email-service/**"
+
+jobs:
+  build:
+    uses: ./.github/workflows/ci-reusable.yml
+    with:
+      service-name: email-service
+      service-path: rideshare-email-service
+      runtime: python
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}

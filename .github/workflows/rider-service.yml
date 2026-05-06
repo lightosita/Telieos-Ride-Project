@@ -1,0 +1,24 @@
+name: Rider Service CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "rideshare-rider-service/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "rideshare-rider-service/**"
+
+jobs:
+  build:
+    uses: ./.github/workflows/ci-reusable.yml
+    with:
+      service-name: rider-service
+      service-path: rideshare-rider-service
+      runtime: nodejs
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
